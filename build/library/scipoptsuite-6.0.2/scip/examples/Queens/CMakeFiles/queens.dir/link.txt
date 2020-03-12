@@ -1,1 +1,0 @@
-/Library/Developer/CommandLineTools/usr/bin/c++  -O3 -DNDEBUG -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names -L/usr/local/opt/libffi/lib CMakeFiles/queens.dir/src/queens.cpp.o CMakeFiles/queens.dir/src/queens_main.cpp.o  -o ../../../../../bin/examples/queens  ../../../../../lib/libscip.6.0.2.0.dylib 
