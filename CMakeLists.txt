@@ -39,15 +39,15 @@ set(TPI none)
 set(tpisources tpi/tpi_none.c)
 set(THREAD_LIBRARIES "")
 set(TPI_NONE on)
-configure_file(scipoptsuite-6.0.2/scip/src/scip/config.h.in ${CMAKE_BINARY_DIR}/scip/config.h @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/library/scipoptsuite-6.0.2/scip/src/scip/config.h.in ${CMAKE_BINARY_DIR}/scip/config.h @ONLY)
 include_directories(${CMAKE_BINARY_DIR})
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ldl")
 endif ()
 
 # Include SCIP.
-add_subdirectory(scipoptsuite-6.0.2/scip/ EXCLUDE_FROM_ALL)
-include_directories(SYSTEM scipoptsuite-6.0.2/scip/src/)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/library/scipoptsuite-6.0.2/scip/ EXCLUDE_FROM_ALL)
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/library/scipoptsuite-6.0.2/scip/src/)
 
 # Link to math library.
 find_library(LIBM m)
@@ -56,11 +56,13 @@ if (NOT LIBM)
 endif ()
 
 # Include fmt.
-include_directories(SYSTEM fmt/include)
-add_subdirectory(fmt EXCLUDE_FROM_ALL)
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/library/fmt/include)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/library/fmt EXCLUDE_FROM_ALL)
 
 # Include cxxopts.
-include_directories(SYSTEM cxxopts/include)
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/library/cxxopts/include)
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/library/robin-hood-hashing/src/include)
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/library)
 
 # Include boost.
 #find_path(BOOST_INCLUDE_DIR
@@ -74,25 +76,25 @@ include_directories(SYSTEM cxxopts/include)
 # Include Truffle Hog.
 include_directories(./)
 set(TRUFFLEHOG_SOURCE_FILES
-        robin-hood-hashing/src/include/robin_hood.h
-        trufflehog/Includes.h
-        trufflehog/Debug.h
-        trufflehog/Coordinates.h
-        trufflehog/Map.h
-        trufflehog/AgentsData.h
-        trufflehog/Instance.h
-        trufflehog/Instance.cpp
-        trufflehog/PriorityQueue.h
-        trufflehog/LabelPool.h
-        trufflehog/LabelPool.cpp
-        trufflehog/Heuristic.h
-        trufflehog/Heuristic.cpp
-        trufflehog/EdgePenalties.h
-        trufflehog/Crossings.h
-        trufflehog/AStar.h
-        trufflehog/AStar.cpp
-        trufflehog/ReservationTable.h
-        trufflehog/ReservationTable.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/robin-hood-hashing/src/include/robin_hood.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/Includes.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/Debug.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/Coordinates.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/Map.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/AgentsData.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/Instance.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/Instance.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/PriorityQueue.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/LabelPool.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/LabelPool.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/Heuristic.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/Heuristic.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/EdgePenalties.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/Crossings.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/AStar.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/AStar.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/ReservationTable.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/ReservationTable.cpp
 )
 
 # Set source files.
@@ -166,11 +168,3 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
 endif ()
-
-# Copy instances into build directory.
-#add_custom_command(TARGET bcp-mapf PRE_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E copy_directory
-#        ${CMAKE_SOURCE_DIR}/2018_instances $<TARGET_FILE_DIR:bcp-mapf>/2018_instances)
-#add_custom_command(TARGET bcp-mapf PRE_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E copy_directory
-#        ${CMAKE_SOURCE_DIR}/2019_instances $<TARGET_FILE_DIR:bcp-mapf>/2019_instances)
