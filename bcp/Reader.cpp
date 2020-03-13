@@ -28,37 +28,22 @@ Author: Edward Lam <ed@ed-lam.com>
 // Read instance from file
 SCIP_RETCODE read_instance(
     SCIP* scip,                   // SCIP
-    const char* scenario_path,    // File path to scenario
-    const Agent nb_agents         // Number of agents to read
-)
+    int x, 
+    int y, 
+    std::vector<std::pair<int, int> > obstacles, 
+    std::vector<std::pair<int, int> > starts,
+    std::vector<std::pair<int, int> > goals)
 {
     // Get instance name.
-    String instance_name("mapf");
-    {
-        const String str(scenario_path);
-        std::smatch m;
-        if (std::regex_match(str, m, std::regex(".*\\/(.+)\\.map.scen")))
-        {
-            instance_name = m.str(1);
-        }
-        else if (std::regex_match(str, m, std::regex(".*\\/(.+)\\.scen")))
-        {
-            instance_name = m.str(1);
-        }
-    }
-    if (nb_agents < std::numeric_limits<Agent>::max())
-    {
-        instance_name += fmt::format("-{}agents", nb_agents);
-    }
 
     // Load instance.
-    auto instance = std::make_shared<Instance>(scenario_path, nb_agents);
+    auto instance = std::make_shared<Instance>(x, y, obstacles, starts, goals);
 
     // Create pricing solver.
     auto astar = std::make_shared<AStar>(instance->map);
 
     // Create the problem.
-    SCIP_CALL(SCIPprobdataCreate(scip, instance_name.c_str(), instance, astar));
+    SCIP_CALL(SCIPprobdataCreate(scip, "instance_name", instance, astar));
 
     // Done.
     return SCIP_OKAY;

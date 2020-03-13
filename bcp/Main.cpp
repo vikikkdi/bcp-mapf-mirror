@@ -27,92 +27,16 @@ Author: Edward Lam <ed@ed-lam.com>
 
 static
 SCIP_RETCODE start_solver(
-    int argc,      // Number of shell parameters
-    char** argv    // Array with shell parameters
+    int x, 
+    int y, 
+    std::vector<std::pair<int, int> > obstacles, 
+    std::vector<std::pair<int, int> > starts,
+    std::vector<std::pair<int, int> > goals
 )
 {
     // Parse program options.
-    String instance_file;
     SCIP_Real time_limit = 0;
-    Agent agents_limit = std::numeric_limits<Agent>::max();
-    try
-    {
-        // Create program options.
-        cxxopts::Options options(argv[0],
-                                 "BCP-MAPF - branch-and-cut-and-price solver for "
-                                 "multi-agent path finding");
-        options.positional_help("instance_file").show_positional_help();
-        options.add_options()
-            ("help", "Print help")
-            ("f,file", "Path to instance file", cxxopts::value<Vector<String>>())
-            ("t,time-limit", "Time limit in seconds", cxxopts::value<SCIP_Real>())
-            ("a,agents-limit", "Read first N agents only", cxxopts::value<int>())
-        ;
-        options.parse_positional({"file"});
-
-        // Parse options.
-        auto result = options.parse(argc, argv);
-
-        // Print help.
-        if (result.count("help") || !result.count("file"))
-        {
-            println("{}", options.help());
-            exit(0);
-        }
-
-        // Get path to instance.
-        if (result.count("file"))
-        {
-            instance_file = result["file"].as<Vector<String>>().at(0);
-        }
-
-        // Get time limit.
-        if (result.count("time-limit"))
-        {
-            time_limit = result["time-limit"].as<SCIP_Real>();
-        }
-
-        // Get agents limit.
-        if (result.count("agents-limit"))
-        {
-            agents_limit = result["agents-limit"].as<int>();
-        }
-    }
-    catch (const cxxopts::OptionException& e)
-    {
-        err("{}", e.what());
-    }
-
-    // Print.
-    println("Branch-and-cut-and-price solver for multi-agent path finding");
-    println("Edward Lam <ed@ed-lam.com>");
-    println("Monash University, Melbourne, Australia");
-#ifdef DEBUG
-    println("Compiled in debug mode");
-#ifdef USE_WAITEDGE_CONFLICTS
-    println("Using wait-edge conflict constraints");
-#endif
-#ifdef USE_RECTANGLE_KNAPSACK_CONFLICTS
-    println("Using rectangle knapsack conflict constraints");
-#endif
-#ifdef USE_CORRIDOR_CONFLICTS
-    println("Using corridor conflict constraints");
-#endif
-#ifdef USE_WAITDELAY_CONFLICTS
-    println("Using wait-delay conflict constraints");
-#endif
-#ifdef USE_EXITENTRY_CONFLICTS
-    println("Using exit-entry conflict constraints");
-#endif
-#ifdef USE_TWOEDGE_CONFLICTS
-    println("Using two-edge conflict constraints");
-#endif
-#ifdef USE_GOAL_CONFLICTS
-    println("Using goal conflict constraints");
-#endif
-#endif
-    println("");
-
+   
     // Initialize SCIP.
     SCIP* scip = nullptr;
     SCIP_CALL(SCIPcreate(&scip));
@@ -177,8 +101,7 @@ SCIP_RETCODE start_solver(
     }
 
     // Read instance.
-    release_assert(agents_limit > 0, "Cannot limit to {} number of agents", agents_limit);
-    SCIP_CALL(read_instance(scip, instance_file.c_str(), agents_limit));
+    SCIP_CALL(read_instance(scip, x, y, obstacles, starts, goals));
 
     // Set time limit.
     if (time_limit > 0)
@@ -193,7 +116,7 @@ SCIP_RETCODE start_solver(
     {
         // Print.
         println("");
-        SCIP_CALL(SCIPprintStatistics(scip, NULL));
+        //SCIP_CALL(SCIPprintStatistics(scip, NULL));
 
         // Write best solution to file.
         SCIP_CALL(write_best_solution(scip));
@@ -209,6 +132,7 @@ SCIP_RETCODE start_solver(
     return SCIP_OKAY;
 }
 
+/*
 int main(int argc, char** argv)
 {
     const SCIP_RETCODE retcode = start_solver(argc, argv);
@@ -219,3 +143,5 @@ int main(int argc, char** argv)
     }
     return 0;
 }
+
+*/

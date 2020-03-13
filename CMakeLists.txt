@@ -33,21 +33,8 @@ if (NOT CPLEX_LIBRARY)
 endif ()
 include_directories(${CPLEX_INCLUDE_DIR})
 
-# Set stuff for SCIP 6.0.2.
-set(WITH_SCIPDEF on)
-set(TPI none)
-set(tpisources tpi/tpi_none.c)
-set(THREAD_LIBRARIES "")
-set(TPI_NONE on)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/library/scipoptsuite-6.0.2/scip/src/scip/config.h.in ${CMAKE_BINARY_DIR}/scip/config.h @ONLY)
+include_directories(SYSTEM library/scipoptsuite-6.0.2/scip/src)
 include_directories(${CMAKE_BINARY_DIR})
-if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ldl")
-endif ()
-
-# Include SCIP.
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/library/scipoptsuite-6.0.2/scip/ EXCLUDE_FROM_ALL)
-include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/library/scipoptsuite-6.0.2/scip/src/)
 
 # Link to math library.
 find_library(LIBM m)
@@ -56,45 +43,35 @@ if (NOT LIBM)
 endif ()
 
 # Include fmt.
-include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/library/fmt/include)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/library/fmt EXCLUDE_FROM_ALL)
+include_directories(SYSTEM library/fmt/include)
 
 # Include cxxopts.
-include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/library/cxxopts/include)
-include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/library/robin-hood-hashing/src/include)
-include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/library)
+include_directories(SYSTEM library/cxxopts/include)
+include_directories(SYSTEM library/robin-hood-hashing/src/include)
 
-# Include boost.
-#find_path(BOOST_INCLUDE_DIR
-#        NAMES boost/unordered/unordered_map.hpp
-#        HINTS "${BOOST_DIR}" "$ENV{BOOST_DIR}")
-#if (NOT BOOST_INCLUDE_DIR)
-#    message(FATAL_ERROR "Boost library not found")
-#endif ()
-#include_directories(SYSTEM ${BOOST_INCLUDE_DIR})
 
 # Include Truffle Hog.
-include_directories(./)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/library)
 set(TRUFFLEHOG_SOURCE_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/robin-hood-hashing/src/include/robin_hood.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/Includes.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/Debug.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/Coordinates.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/Map.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/AgentsData.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/Instance.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/Instance.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/PriorityQueue.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/LabelPool.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/LabelPool.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/Heuristic.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/Heuristic.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/EdgePenalties.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/Crossings.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/AStar.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/AStar.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/ReservationTable.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/library/trufflehog/ReservationTable.cpp
+        library/robin-hood-hashing/src/include/robin_hood.h
+        library/trufflehog/Includes.h
+        library/trufflehog/Debug.h
+        library/trufflehog/Coordinates.h
+        library/trufflehog/Map.h
+        library/trufflehog/AgentsData.h
+        library/trufflehog/Instance.h
+        library/trufflehog/Instance.cpp
+        library/trufflehog/PriorityQueue.h
+        library/trufflehog/LabelPool.h
+        library/trufflehog/LabelPool.cpp
+        library/trufflehog/Heuristic.h
+        library/trufflehog/Heuristic.cpp
+        library/trufflehog/EdgePenalties.h
+        library/trufflehog/Crossings.h
+        library/trufflehog/AStar.h
+        library/trufflehog/AStar.cpp
+        library/trufflehog/ReservationTable.h
+        library/trufflehog/ReservationTable.cpp
 )
 
 # Set source files.
@@ -142,9 +119,10 @@ set(MAPF_SOURCE_FILES
 )
 include_directories(bcp/)
 
+
 # Add executable.
-add_executable(bcp-mapf ${MAPF_SOURCE_FILES} ${TRUFFLEHOG_SOURCE_FILES})
-target_link_libraries(bcp-mapf fmt::fmt-header-only libscip ${LIBM})
+#add_executable(bcp-mapf ${MAPF_SOURCE_FILES} ${TRUFFLEHOG_SOURCE_FILES})
+#target_link_libraries(bcp-mapf fmt::fmt-header-only libscip ${LIBM})
 
 # Enable the families of cuts.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_WAITEDGE_CONFLICTS")

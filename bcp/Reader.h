@@ -26,8 +26,11 @@ Author: Edward Lam <ed@ed-lam.com>
 // Read instance from file
 SCIP_RETCODE read_instance(
     SCIP* scip,                                                  // SCIP
-    const char* scenario_path,                                   // File path to scenario
-    const Agent nb_agents = std::numeric_limits<Agent>::max()    // Number of agents to read
-);
+	int x, 
+    int y, 
+    std::vector<std::pair<int, int> > obstacles, 
+    std::vector<std::pair<int, int> > starts,
+    std::vector<std::pair<int, int> > goals
+ );
 
 #endif

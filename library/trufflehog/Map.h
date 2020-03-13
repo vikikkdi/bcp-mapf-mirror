@@ -65,7 +65,7 @@ class Map
     }
     inline Node get_id(const Position x, const Position y) const
     {
-        return y * width_ + x;
+        return x * width_ + y;
     }
     inline Position get_x(const Node n) const
     {

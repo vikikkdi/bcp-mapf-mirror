@@ -30,120 +30,46 @@ struct AgentMapData
     Position map_height;
 };
 
-void read_map(const char* const map_path, Map& map)
+void read_map(int x, int y, std::vector<std::pair<int, int> > obstacles, Map& map)
 {
-    // Open map file.
-    std::ifstream map_file;
-    map_file.open(map_path, std::ios::in);
-    release_assert(map_file.good(), "Invalid map file {}", map_path);
-
-    // Read map.
-    {
-        char buf[1024];
-        map_file.getline(buf, 1024);
-        release_assert(strstr(buf, "type octile"), "Invalid map file format");
-    }
 
     // Read map size.
-    Position width = 0;
-    Position height = 0;
-    String param;
-    {
-        Int value;
-        for (Int i = 0; i < 2; ++i)
-        {
-            map_file >> param >> value;
-            if (param == "width")
-            {
-                width = value;
-            }
-            else if (param == "height")
-            {
-                height = value;
-            }
-            else
-            {
-                err("Invalid input in map file {}", param);
-            }
-        }
-        release_assert(height > 0, "Invalid map height {}", height);
-        release_assert(width > 0, "Invalid map width {}", width);
-        height += 2; // Add padding.
-        width += 2;
-    }
+    Position width = y+2;
+    Position height = x+2;
 
     // Create map.
     map.resize(width, height);
 
-    // Read grid.
-    map_file >> param;
-    release_assert(param == "map", "Invalid map file format");
-    {
-        auto c = static_cast<char>(map_file.get());
-        release_assert(map_file.good(), "Invalid map format");
-        if (c == '\r')
-        {
-            c = static_cast<char>(map_file.get());
-            release_assert(map_file.good(), "Invalid map format");
-        }
-        release_assert(c == '\n', "Invalid map format");
-    }
-    Node n = width + 1; // Start reading into the second row, second column of the grid
-    while (true)
-    {
-        auto c = static_cast<char>(map_file.get());
-        if (!map_file.good())
-        {
-            // eof
-            break;
-        }
-
-        switch (c)
-        {
-            case '\n':
-                if (auto c2 = map_file.peek(); map_file.good() && c2 != '\r' && c2 != '\n')
-                {
-                    n += 2;
-                }
-                break;
-            case ' ':
-            case '\t':
-            case '\r':
-                continue;
-            case '.':
-                release_assert(n < map.size(),
-                               "More tiles in the map file than its size");
-                map.set_passable(n);
-                [[fallthrough]];
-            default:
-                n++;
-                break;
+    for(int i=1; i<height-1;i++){
+        for(int j=1; j<width-1;j++){
+            Node n = map.get_id(i, j);
+            map.set_passable(n);       
         }
     }
-    n += width + 1; // Should be +2 but already counted a +1 from the previous \n
-    release_assert(n == map.size(), "Unexpected number of tiles");
 
-    // Close file.
-    map_file.close();
+    for(auto it = obstacles.begin(); it!=obstacles.end(); ++it){
+        int i = x - it->second;
+        int j = it->first + 1;
+
+        Node n = map.get_id(i, j);
+
+        map.set_obstacle(n);    
+    }
 }
 
-Instance::Instance(const char* scenario_path, const Agent nb_agents)
+Instance::Instance(
+    int x, 
+    int y, 
+    std::vector<std::pair<int, int> > obstacles, 
+    std::vector<std::pair<int, int> > starts,
+    std::vector<std::pair<int, int> > goals)
 {
+    
     // Read agents.
     Vector<AgentMapData> agents_map_data;
     {
         // Open scenario file.
-        std::ifstream scen_file;
-        scen_file.open(scenario_path, std::ios::in);
-        release_assert(scen_file.good(), "Cannot find scenario file {}", scenario_path);
-
-        // Check file format.
-        {
-            char buf[1024];
-            scen_file.getline(buf, 1024);
-            release_assert(strstr(buf, "version 1"), "Invalid scenario file format");
-        }
-
+        
         // Read agents data.
         {
             Position start_x;
@@ -152,57 +78,33 @@ Instance::Instance(const char* scenario_path, const Agent nb_agents)
             Position goal_y;
             Float tmp;
             AgentMapData agent_map_data;
-            while (agents.size() < nb_agents &&
-                   (scen_file >> tmp >>
-                    agent_map_data.map_path >>
-                    agent_map_data.map_width >> agent_map_data.map_height >>
-                    start_x >> start_y >>
-                    goal_x >> goal_y >> tmp))
-            {
-                // Add padding.
-                agent_map_data.map_width += 2;
-                agent_map_data.map_height += 2;
-                start_x++;
-                start_y++;
-                goal_x++;
-                goal_y++;
 
-                // Read map.
-                if (map.empty())
-                {
-                    // Prepend the directory of the scenario file.
-                    String map_path_str;
-                    const String scenario_path_str(scenario_path);
-                    const auto last_slash_idx = scenario_path_str.rfind('/');
-                    if (std::string::npos != last_slash_idx)
-                    {
-                        map_path_str = scenario_path_str.substr(0, last_slash_idx);
-                    }
-                    map_path_str += "/" + agent_map_data.map_path;
+            agent_map_data.map_width = y+2;
+            agent_map_data.map_height = x+2;
 
-                    // Read map.
-                    read_map(map_path_str.c_str(), map);
+            for(int i = 0; i < goals.size();i++){
+                start_x = x - starts[i].second;
+                start_y = starts[i].first + 1;
+                goal_x = x - goals[i].second;
+                goal_y = goals[i].first + 1;
+            
+
+                if(map.empty()){
+                    read_map(x, y, obstacles, map);
                 }
-
-                // Store.
                 agents.add_agent(start_x, start_y, goal_x, goal_y, map);
                 agents_map_data.push_back(agent_map_data);
             }
         }
-        release_assert(
-            nb_agents == std::numeric_limits<Int>::max() || agents.size() == nb_agents,
-            "Scenario file contained {} agents. Not enough to read {} agents",
-            agents.size(), nb_agents);
+        
         if (agents.empty())
         {
-            err("No agents in scenario file {}", scenario_path);
+            err("No agents in scenario");
         }
-
-        // Close file.
-        scen_file.close();
     }
 
     // Check.
+    
     for (Agent a = 0; a < agents.size(); ++a)
     {
         const auto [start_id, goal_id, start_x, start_y, goal_x, goal_y] = agents[a];
@@ -213,13 +115,13 @@ Instance::Instance(const char* scenario_path, const Agent nb_agents)
         release_assert(map_width2 == map.width(),
                        "Map width of agent {} does not match actual map size", a);
         release_assert(map_height2 == map.height(),
-                       "Map width of agent {} does not match actual map size", a);
+                       "Map height of agent {} does not match actual map size", a);
 
-        const auto start_tile = start_y * map.width() + start_x;
+        const auto start_tile = start_x * map.width() + start_y;
         release_assert(start_tile < map.size() && map[start_tile],
                        "Agent {} starts at an obstacle", a);
 
-        const auto goal_tile = goal_y * map.width() + goal_x;
+        const auto goal_tile = goal_x * map.width() + goal_y;
         release_assert(goal_tile < map.size() && map[goal_tile],
                        "Agent {} ends at an obstacle", a);
     }
