@@ -24,6 +24,7 @@ Author: Edward Lam <ed@ed-lam.com>
 #include "scip/scipshell.h"
 #include "scip/scipdefplugins.h"
 #include "cxxopts.hpp"
+#include <vector>
 
 static
 SCIP_RETCODE start_solver(
@@ -31,7 +32,8 @@ SCIP_RETCODE start_solver(
     int y, 
     std::vector<std::pair<int, int> > obstacles, 
     std::vector<std::pair<int, int> > starts,
-    std::vector<std::pair<int, int> > goals
+    std::vector<std::pair<int, int> > goals,
+    std::pair<float, std::vector<std::string> > *solution
 )
 {
     // Parse program options.
@@ -119,7 +121,7 @@ SCIP_RETCODE start_solver(
         //SCIP_CALL(SCIPprintStatistics(scip, NULL));
 
         // Write best solution to file.
-        SCIP_CALL(write_best_solution(scip));
+        *solution = write_best_solution(scip);
     }
 
     // Free memory.

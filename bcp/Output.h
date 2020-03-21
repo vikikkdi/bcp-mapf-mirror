@@ -21,9 +21,10 @@ Author: Edward Lam <ed@ed-lam.com>
 #define MAPF_OUTPUT_H
 
 #include "scip/scip.h"
+#include <vector>
 
 // Write best solution to file
-SCIP_RETCODE write_best_solution(
+std::pair<float, std::vector<std::string> > write_best_solution(
     SCIP* scip    // SCIP
 );
 
