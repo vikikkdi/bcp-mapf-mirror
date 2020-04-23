@@ -22,6 +22,7 @@ Author: Edward Lam <ed@ed-lam.com>
 
 #include "scip/scip.h"
 #include <vector>
+#include <string>
 
 // Write best solution to file
 std::pair<float, std::vector<std::string> > write_best_solution(
