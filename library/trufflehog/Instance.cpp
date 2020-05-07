@@ -18,6 +18,7 @@ Author: Edward Lam <ed@ed-lam.com>
 */
 
 #include <fstream>
+#include <iostream>
 #include "Instance.h"
 
 namespace TruffleHog
@@ -34,8 +35,8 @@ void read_map(int x, int y, std::vector<std::pair<int, int> > obstacles, Map& ma
 {
 
     // Read map size.
-    Position width = y+2;
-    Position height = x+2;
+    Position width = x+2;
+    Position height = y+2;
 
     // Create map.
     map.resize(width, height);
@@ -46,15 +47,15 @@ void read_map(int x, int y, std::vector<std::pair<int, int> > obstacles, Map& ma
             map.set_passable(n);       
         }
     }
-
     for(auto it = obstacles.begin(); it!=obstacles.end(); ++it){
-        int i = x - it->second;
+        int i = /*x - */it->second + 1;
         int j = it->first + 1;
 
         Node n = map.get_id(i, j);
 
         map.set_obstacle(n);    
     }
+
 }
 
 Instance::Instance(
@@ -79,16 +80,15 @@ Instance::Instance(
             Float tmp;
             AgentMapData agent_map_data;
 
-            agent_map_data.map_width = y+2;
-            agent_map_data.map_height = x+2;
+            agent_map_data.map_width = x+2;
+            agent_map_data.map_height = y+2;
 
             for(int i = 0; i < goals.size();i++){
-                start_x = x - starts[i].second;
+                start_x = /*x - */starts[i].second + 1;
                 start_y = starts[i].first + 1;
-                goal_x = x - goals[i].second;
+                goal_x = /*x - */goals[i].second + 1;
                 goal_y = goals[i].first + 1;
-            
-
+                
                 if(map.empty()){
                     read_map(x, y, obstacles, map);
                 }
@@ -128,3 +128,4 @@ Instance::Instance(
 }
 
 }
+
